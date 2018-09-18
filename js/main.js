@@ -5,11 +5,12 @@
     let pluginName = 'smartWatcher';
     let defaultParameters = {
         //variables used
-            seconds : 60,
+            seconds : 59,
             minutes : 59,
             hours : 23, 
             days : 364,
             status : true,
+            background: 'rgb(68, 68, 68)',
         //functions initialization
             init : function(){},
             start : function(){},
@@ -17,27 +18,31 @@
             getCounterTime : function(){},
             stopTimer : function(){},
             startTimer : function(){},
+            formatDigit: function(){},
 
 
     }
+    
     
 
     //Initial check if plugin is exists or not
     $.fn[pluginName] = function(argumentList){
     
-        let args = arguments;
+        let n,args = arguments;
         return this.each(function(){
             let $this = $(this);
             let data  = $.data(this,'plugin_'+pluginName);
         
+            
             let argumentLists = typeof argumentList === 'object' && argumentList;
             if(!data){
-                $this.data('plugin_'+pluginName,new runPlugin(this, argumentLists));
+                $this.data('plugin_'+ pluginName, n = new runPlugin(this, argumentLists));
 
             }
             if( typeof argumentList === 'string' ){
                 data[argumentList].apply(data, Array.prototype.slice.call(args, 1));
             }
+
         });
     }
 
@@ -48,27 +53,20 @@
         this.$selector = $(selector);
         this.parameters = $.extend({},defaultParameters,parameters);
         this.state = 0;
-        this.moveInterval = 3000;
         this.paused = 0;
-        console.log(this.parameters);
+        this.autoStart = true,
+    // Auto start...
         this.start();
-        $('.start').on('click', function(){
-            console.log(this.parameters);
-            this.parameters.status = true;
-        });
-        $('.stop').on('click', function(){
-            this.parameters.status = false;
-        });
-            
+
     }
 
     
     //--------------functions ---------
     runPlugin.prototype = {
         
-          getCounterTime: function()
+        getCounterTime: function()
          {
-            this.displayTimes();
+            
             this.parameters.seconds-- ;
             if(this.parameters.seconds == 0 && this.parameters.minutes){
                 this.parameters.minutes--;
@@ -83,6 +81,7 @@
                 this.parameters.days--;
                 this.parameters.hours = 23;
             }
+            this.displayTimes();
          },
        stopTimer: function()
          {
@@ -95,7 +94,6 @@
 
        start: function()
          {
-            this.getCounterTime();
              setInterval( time => {
                  if(this.parameters.status && this.parameters.seconds){
                      this.getCounterTime();
@@ -105,8 +103,23 @@
          },
          displayTimes: function()
          {
-             let times = this.parameters.days + ' : '+ this.parameters.hours + ' : '+ this.parameters.minutes + ' : '+ this.parameters.seconds;
-            $('.smart-watch').html(times);
+    
+             let disign = '<h2 class="timer-wraper" style="background-color:'+ this.parameters.background +'">' + this.getTimes() +'</h2>'
+             $('.smart-watch').html(disign);
+         },
+         getTimes: function()
+         {
+            let seconds, minutes,hours, days;
+                seconds = this.parameters.seconds < 10 ? "0" + this.parameters.seconds : this.parameters.seconds ;
+        
+                minutes = this.parameters.minutes < 10 ? "0" + this.parameters.minutes  : this.parameters.minutes;
+           
+                hours = this.parameters.hours < 10 ? "0" + this.parameters.hours : this.parameters.hours;
+    
+                days = this.parameters.days < 100? "0" + this.parameters.days : this.parameters.days ;
+      
+           
+            return  days +' : '+ hours + ' : '+ minutes+ ' : '+ seconds;       
          }
 
     }
